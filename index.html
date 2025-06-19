@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Behind-the-Meter Solar PPA Simulator (Investor View)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the Inter font and overall aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .container {
+            max-width: 90%;
+            margin: auto;
+        }
+        /* Custom styling for inputs and buttons for a modern look */
+        input[type="number"] {
+            border-radius: 0.5rem; /* rounded corners */
+            padding: 0.75rem;
+            border: 1px solid #d1d5db; /* light gray border */
+            width: 100%;
+        }
+        button {
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600; /* semi-bold */
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="container bg-white shadow-xl rounded-xl p-8 md:p-12 lg:p-16 flex flex-col lg:flex-row gap-8 lg:gap-12 w-full max-w-7xl">
+        <!-- Simulator Input Section -->
+        <div class="lg:w-1/2">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-8 text-center lg:text-left">BTM Solar PPA Simulator (Investor View)</h1>
+            <p class="text-gray-600 mb-8 leading-relaxed">
+                Model the financial returns of a Behind-the-Meter Solar Power Purchase Agreement from an investor's perspective.
+                Enter your project details to estimate ROI and IRR.
+            </p>
+
+            <div class="space-y-6">
+                <h3 class="text-xl font-semibold text-gray-800 pt-4 pb-2">Solar System Details</h3>
+                <!-- System Size -->
+                <div>
+                    <label for="systemSize" class="block text-sm font-medium text-gray-700 mb-2">System Size (kW)</label>
+                    <input type="number" id="systemSize" value="100" min="1" step="1" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                <!-- Daily Average Solar Generation Per kW -->
+                <div>
+                    <label for="dailyAvgSolarGenerationPerKw" class="block text-sm font-medium text-gray-700 mb-2">Daily Average Solar Generation (kWh/kW/day)</label>
+                    <input type="number" id="dailyAvgSolarGenerationPerKw" value="3.56" min="1" step="0.01" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                <!-- System Degradation Rate -->
+                <div>
+                    <label for="systemDegradationRate" class="block text-sm font-medium text-gray-700 mb-2">Annual System Degradation Rate (%)</label>
+                    <input type="number" id="systemDegradationRate" value="0.5" min="0" step="0.1" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 pt-4 pb-2">PPA and Energy Sale Details</h3>
+                <!-- Initial PPA Price -->
+                <div>
+                    <label for="initialPPAPrice" class="block text-sm font-medium text-gray-700 mb-2">Initial PPA Price for Customer Consumption ($/kWh)</label>
+                    <input type="number" id="initialPPAPrice" value="0.10" min="0.01" step="0.001" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                <!-- PPA Escalation Rate -->
+                <div>
+                    <label for="ppaEscalationRate" class="block text-sm font-medium text-gray-700 mb-2">Annual PPA Price Escalation Rate (%)</label>
+                    <input type="number" id="ppaEscalationRate" value="1.5" min="0" step="0.1" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                <!-- Initial Export Price -->
+                <div>
+                    <label for="initialExportPrice" class="block text-sm font-medium text-gray-700 mb-2">Initial Export Price ($/kWh)</label>
+                    <input type="number" id="initialExportPrice" value="0.03" min="0.001" step="0.001" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                 <!-- Export Price Escalation Rate -->
+                <div>
+                    <label for="exportPriceEscalationRate" class="block text-sm font-medium text-gray-700 mb-2">Annual Export Price Escalation Rate (%)</label>
+                    <input type="number" id="exportPriceEscalationRate" value="1" min="0" step="0.1" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                <!-- PPA Term -->
+                <div>
+                    <label for="ppaTerm" class="block text-sm font-medium text-gray-700 mb-2">PPA Term (Years)</label>
+                    <input type="number" id="ppaTerm" value="20" min="5" step="1" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 pt-4 pb-2">Investor Financials</h3>
+                <!-- Initial System Cost -->
+                <div>
+                    <label for="initialSystemCost" class="block text-sm font-medium text-gray-700 mb-2">Initial System Cost ($)</label>
+                    <input type="number" id="initialSystemCost" value="150000" min="1000" step="1000" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                <!-- Investor Annual O&M Cost -->
+                <div>
+                    <label for="investorOMRate" class="block text-sm font-medium text-gray-700 mb-2">Annual Investor O&M Cost (% of Initial System Cost)</label>
+                    <input type="number" id="investorOMRate" value="1" min="0" step="0.1" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                <!-- Discount Rate for NPV -->
+                <div>
+                    <label for="discountRate" class="block text-sm font-medium text-gray-700 mb-2">Discount Rate (%)</label>
+                    <p class="text-xs text-gray-500 mb-2">Used for Net Present Value (NPV) calculation.</p>
+                    <input type="number" id="discountRate" value="5" min="0" step="0.1" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 pt-4 pb-2">Customer Consumption Profile</h3>
+                <!-- Customer Self-Consumption Percentage -->
+                <div>
+                    <label for="customerSelfConsumptionPercentage" class="block text-sm font-medium text-gray-700 mb-2">Customer Self-Consumption Percentage of Solar Production (%)</label>
+                    <p class="text-xs text-gray-500 mb-2">This is the percentage of generated solar energy the customer consumes directly. The remaining percentage will be considered 'exported energy'.</p>
+                    <input type="number" id="customerSelfConsumptionPercentage" value="80" min="0" max="100" step="1" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                
+                <!-- Calculate Button -->
+                <button id="calculateBtn" class="w-full bg-blue-600 text-white py-3 rounded-md shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 ease-in-out">
+                    Calculate PPA Financials
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Display Section -->
+        <div class="lg:w-1/2 bg-blue-50 p-8 rounded-lg shadow-inner flex flex-col max-h-screen overflow-y-auto">
+            <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Investor Financials Estimate</h2>
+            <div id="results" class="space-y-4 text-gray-700">
+                <p class="text-lg"><span class="font-semibold text-blue-700">Project IRR:</span> <span id="projectIRRResult">0.00%</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Investor ROI:</span> <span id="investorROIResult">0.00%</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Net Present Value (NPV):</span> <span id="netPresentValueResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Payback Period:</span> <span id="paybackPeriodResult">N/A</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Levelized Cost of Energy (LCOE):</span> <span id="lcoeResult">$0.00/kWh</span></p>
+                <hr class="my-4 border-t-2 border-blue-200"> <!-- Separator -->
+                <p class="text-lg"><span class="font-semibold text-blue-700">Initial System Cost:</span> <span id="initialSystemCostResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Generated (over PPA Term):</span> <span id="totalSolarEnergyGeneratedResult">0 kWh</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Sold to Customer:</span> <span id="totalSolarEnergySoldToCustomerResult">0 kWh</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Exported:</span> <span id="totalSolarEnergyExportedResult">0 kWh</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Total PPA Revenue from Customer:</span> <span id="totalPPARevenueCustomerResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Total Revenue from Export:</span> <span id="totalExportRevenueResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Total Investor O&M Cost:</span> <span id="totalInvestorOMCostResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Net Profit for Investor:</span> <span id="netProfitForInvestorResult">$0.00</span></p>
+                
+                <div id="investorCashFlowChart" class="mt-8">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-4 text-center">Projected Annual Investor Net Cash Flow</h3>
+                    <!-- Fixed height wrapper for the canvas -->
+                    <div class="relative w-full h-64">
+                        <canvas id="cashFlowChart" class="absolute inset-0"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js CDN for plotting results -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Get references to input elements
+        const systemSizeInput = document.getElementById('systemSize');
+        const dailyAvgSolarGenerationPerKwInput = document.getElementById('dailyAvgSolarGenerationPerKw');
+        const systemDegradationRateInput = document.getElementById('systemDegradationRate');
+        const initialPPAPriceInput = document.getElementById('initialPPAPrice');
+        const ppaEscalationRateInput = document.getElementById('ppaEscalationRate');
+        const initialExportPriceInput = document.getElementById('initialExportPrice');
+        const exportPriceEscalationRateInput = document.getElementById('exportPriceEscalationRate');
+        const ppaTermInput = document.getElementById('ppaTerm');
+        const initialSystemCostInput = document.getElementById('initialSystemCost');
+        const investorOMRateInput = document.getElementById('investorOMRate');
+        const discountRateInput = document.getElementById('discountRate'); // New input for Discount Rate
+        const customerSelfConsumptionPercentageInput = document.getElementById('customerSelfConsumptionPercentage');
+        const calculateBtn = document.getElementById('calculateBtn');
+
+        // Get references to result display elements
+        const projectIRRResult = document.getElementById('projectIRRResult'); // Reordered
+        const investorROIResult = document.getElementById('investorROIResult'); // Reordered
+        const netPresentValueResult = document.getElementById('netPresentValueResult'); // New output
+        const paybackPeriodResult = document.getElementById('paybackPeriodResult'); // New output
+        const lcoeResult = document.getElementById('lcoeResult'); // New output
+        const initialSystemCostResult = document.getElementById('initialSystemCostResult');
+        const totalSolarEnergyGeneratedResult = document.getElementById('totalSolarEnergyGeneratedResult');
+        const totalSolarEnergySoldToCustomerResult = document.getElementById('totalSolarEnergySoldToCustomerResult');
+        const totalSolarEnergyExportedResult = document.getElementById('totalSolarEnergyExportedResult');
+        const totalPPARevenueCustomerResult = document.getElementById('totalPPARevenueCustomerResult');
+        const totalExportRevenueResult = document.getElementById('totalExportRevenueResult');
+        const totalInvestorOMCostResult = document.getElementById('totalInvestorOMCostResult');
+        const netProfitForInvestorResult = document.getElementById('netProfitForInvestorResult');
+        const cashFlowChartCanvas = document.getElementById('cashFlowChart');
+        let cashFlowChart; // To hold the Chart.js instance
+
+        /**
+         * Calculates the Internal Rate of Return (IRR) for a series of cash flows.
+         * Uses a numerical approximation (bisection method).
+         * @param {Array<number>} cashFlows - Array of cash flows, starting with initial investment (negative).
+         * @returns {number} The IRR as a decimal, or NaN if not found.
+         */
+        function calculateIRR(cashFlows) {
+            if (cashFlows.length === 0) return NaN;
+            
+            // Function to calculate Net Present Value (NPV) for a given rate
+            const npv = (rate) => {
+                let sum = 0;
+                for (let i = 0; i < cashFlows.length; i++) {
+                    sum += cashFlows[i] / Math.pow(1 + rate, i);
+                }
+                return sum;
+            };
+
+            const MAX_ITERATIONS = 1000;
+            const EPSILON = 1e-6; // Tolerance for NPV to be close to zero
+
+            let low = -0.99; // Lower bound for rate (-99%, as 1+rate must be > 0)
+            let high = 5.0; // Upper bound for rate (500%)
+
+            // Check if a valid range for IRR exists
+            if (npv(low) * npv(high) > 0) {
+                 // Try expanding the range if initial bracket doesn't contain a root
+                low = -0.999;
+                high = 10.0;
+                if (npv(low) * npv(high) > 0) {
+                    return NaN; // Still no sign change, likely no real root in a reasonable range
+                }
+            }
+
+
+            for (let i = 0; i < MAX_ITERATIONS; i++) {
+                let mid = (low + high) / 2;
+                if (Math.abs(npv(mid)) < EPSILON) {
+                    return mid;
+                }
+
+                if (npv(mid) * npv(low) < 0) {
+                    high = mid;
+                } else {
+                    low = mid;
+                }
+            }
+            return NaN; // Could not converge within max iterations
+        }
+
+        /**
+         * Calculates Net Present Value (NPV) for a series of cash flows at a given discount rate.
+         * @param {Array<number>} cashFlows - Array of cash flows, starting with initial investment (negative).
+         * @param {number} discountRate - The discount rate as a decimal (e.g., 0.05 for 5%).
+         * @returns {number} The calculated NPV.
+         */
+        function calculateNPV(cashFlows, discountRate) {
+            let npv = 0;
+            for (let i = 0; i < cashFlows.length; i++) {
+                npv += cashFlows[i] / Math.pow(1 + discountRate, i);
+            }
+            return npv;
+        }
+
+        /**
+         * Calculates the financial benefits and metrics for a BTM Solar PPA from an investor's view.
+         * @returns {Object} An object containing all calculated results and data for charting.
+         */
+        function calculatePPADetails() {
+            // Retrieve input values
+            const systemSize = parseFloat(systemSizeInput.value); // kW
+            const dailyAvgSolarGenerationPerKw = parseFloat(dailyAvgSolarGenerationPerKwInput.value); // kWh/kW/day
+            const systemDegradationRate = parseFloat(systemDegradationRateInput.value) / 100; // Convert % to decimal
+            let initialPPAPrice = parseFloat(initialPPAPriceInput.value); // $/kWh
+            const ppaEscalationRate = parseFloat(ppaEscalationRateInput.value) / 100; // Convert % to decimal
+            let initialExportPrice = parseFloat(initialExportPriceInput.value); // $/kWh
+            const exportPriceEscalationRate = parseFloat(exportPriceEscalationRateInput.value) / 100; // Convert % to decimal
+            const ppaTerm = parseInt(ppaTermInput.value); // Years
+            const initialSystemCost = parseFloat(initialSystemCostInput.value); // $
+            const investorOMRate = parseFloat(investorOMRateInput.value) / 100; // Convert % to decimal
+            const discountRate = parseFloat(discountRateInput.value) / 100; // New: Discount Rate
+            const customerSelfConsumptionPercentage = parseFloat(customerSelfConsumptionPercentageInput.value) / 100; // Convert % to decimal
+
+            // Initialize totals for investor
+            let totalSolarEnergyGenerated = 0;
+            let totalSolarEnergySoldToCustomer = 0;
+            let totalSolarEnergyExported = 0;
+            let totalPPARevenueCustomer = 0;
+            let totalExportRevenue = 0;
+            let totalInvestorOMCost = 0;
+            let cumulativeCashFlow = -initialSystemCost; // For payback period calculation
+            let paybackPeriod = 'N/A';
+            let totalLifetimeCostsForLCOE = initialSystemCost;
+            let totalLifetimeEnergyProducedForLCOE = 0;
+
+            
+            const cashFlows = [-initialSystemCost]; // Initial investment is a negative cash flow
+            const annualNetCashFlowData = [];
+            const chartLabels = [];
+
+            // Calculate annual O&M cost for investor (fixed percentage of initial cost)
+            const annualFixedOMCost = initialSystemCost * investorOMRate;
+
+            // Loop through each year of the PPA term
+            for (let year = 1; year <= ppaTerm; year++) {
+                // Calculate annual solar generation from daily average
+                const annualSolarGeneration = systemSize * dailyAvgSolarGenerationPerKw * 365;
+
+                // Adjust annual solar generation for degradation
+                const effectiveSolarGeneration = annualSolarGeneration * (1 - systemDegradationRate)**(year - 1);
+                
+                // Energy consumed by customer and exported
+                const consumedByCustomer = effectiveSolarGeneration * customerSelfConsumptionPercentage;
+                const exportedEnergy = effectiveSolarGeneration * (1 - customerSelfConsumptionPercentage); // The remaining percentage is exported
+                
+                // Adjust PPA price for escalation
+                const effectivePPAPrice = initialPPAPrice * (1 + ppaEscalationRate)**(year - 1);
+
+                // Adjust Export price for escalation
+                const effectiveExportPrice = initialExportPrice * (1 + exportPriceEscalationRate)**(year - 1);
+
+                // Investor's annual revenue from customer consumption
+                const investorAnnualRevenueCustomer = consumedByCustomer * effectivePPAPrice;
+
+                // Investor's annual revenue from exported energy
+                const investorAnnualRevenueExport = exportedEnergy * effectiveExportPrice;
+
+                // Investor's total annual revenue
+                const totalInvestorAnnualRevenue = investorAnnualRevenueCustomer + investorAnnualRevenueExport;
+
+                // Investor's annual net cash flow (total revenue minus O&M)
+                const investorAnnualNetCashFlow = totalInvestorAnnualRevenue - annualFixedOMCost;
+
+                // Accumulate totals
+                totalSolarEnergyGenerated += effectiveSolarGeneration;
+                totalSolarEnergySoldToCustomer += consumedByCustomer;
+                totalSolarEnergyExported += exportedEnergy;
+                totalPPARevenueCustomer += investorAnnualRevenueCustomer;
+                totalExportRevenue += investorAnnualRevenueExport;
+                totalInvestorOMCost += annualFixedOMCost;
+                totalLifetimeCostsForLCOE += annualFixedOMCost;
+                totalLifetimeEnergyProducedForLCOE += effectiveSolarGeneration;
+                
+                cashFlows.push(investorAnnualNetCashFlow);
+                annualNetCashFlowData.push(investorAnnualNetCashFlow);
+                chartLabels.push(`Year ${year}`);
+
+                // Calculate Payback Period
+                if (paybackPeriod === 'N/A') {
+                    cumulativeCashFlow += investorAnnualNetCashFlow;
+                    if (cumulativeCashFlow >= 0) {
+                        paybackPeriod = (year - 1) + (Math.abs(cumulativeCashFlow - investorAnnualNetCashFlow) / investorAnnualNetCashFlow);
+                    }
+                }
+            }
+
+            // Calculate Net Profit for Investor
+            const netProfitForInvestor = totalPPARevenueCustomer + totalExportRevenue - totalInvestorOMCost; // Net revenue after O&M
+            const actualProfitAfterInvestment = netProfitForInvestor - initialSystemCost; // Final profit after considering initial investment
+
+            // Calculate Investor ROI
+            const investorROI = initialSystemCost > 0 ? (actualProfitAfterInvestment / initialSystemCost) * 100 : 0;
+
+            // Calculate Project IRR
+            const projectIRR = calculateIRR(cashFlows) * 100; // Convert to percentage
+
+            // Calculate Net Present Value (NPV)
+            const netPresentValue = calculateNPV(cashFlows, discountRate);
+
+            // Calculate Levelized Cost of Energy (LCOE)
+            const lcoe = totalLifetimeEnergyProducedForLCOE > 0 ? (totalLifetimeCostsForLCOE / totalLifetimeEnergyProducedForLCOE) : 0;
+
+
+            return {
+                initialSystemCost: initialSystemCost,
+                totalSolarEnergyGenerated: totalSolarEnergyGenerated,
+                totalSolarEnergySoldToCustomer: totalSolarEnergySoldToCustomer,
+                totalSolarEnergyExported: totalSolarEnergyExported,
+                totalPPARevenueCustomer: totalPPARevenueCustomer,
+                totalExportRevenue: totalExportRevenue,
+                totalInvestorOMCost: totalInvestorOMCost,
+                netProfitForInvestor: actualProfitAfterInvestment,
+                investorROI: investorROI,
+                projectIRR: projectIRR,
+                netPresentValue: netPresentValue,
+                paybackPeriod: typeof paybackPeriod === 'number' ? paybackPeriod.toFixed(2) + ' years' : 'N/A',
+                lcoe: lcoe,
+                annualNetCashFlowData: annualNetCashFlowData,
+                chartLabels: chartLabels
+            };
+        }
+
+        /**
+         * Displays the calculated PPA financial results in the designated HTML elements.
+         * Also updates the chart with investor's annual net cash flow.
+         * @param {Object} results - The results object from calculatePPADetails.
+         */
+        function displayResults(results) {
+            // Display reordered relevant outputs
+            projectIRRResult.textContent = `${results.projectIRR.toFixed(2)}%`;
+            investorROIResult.textContent = `${results.investorROI.toFixed(2)}%`;
+            netPresentValueResult.textContent = `$${results.netPresentValue.toFixed(2)}`;
+            paybackPeriodResult.textContent = results.paybackPeriod;
+            lcoeResult.textContent = `$${results.lcoe.toFixed(3)}/kWh`; // LCOE typically shown with more precision
+
+            // Display other outputs
+            initialSystemCostResult.textContent = `$${results.initialSystemCost.toFixed(2)}`;
+            totalSolarEnergyGeneratedResult.textContent = `${results.totalSolarEnergyGenerated.toLocaleString(undefined, {maximumFractionDigits: 0})} kWh`;
+            totalSolarEnergySoldToCustomerResult.textContent = `${results.totalSolarEnergySoldToCustomer.toLocaleString(undefined, {maximumFractionDigits: 0})} kWh`;
+            totalSolarEnergyExportedResult.textContent = `${results.totalSolarEnergyExported.toLocaleString(undefined, {maximumFractionDigits: 0})} kWh`;
+            totalPPARevenueCustomerResult.textContent = `$${results.totalPPARevenueCustomer.toFixed(2)}`;
+            totalExportRevenueResult.textContent = `$${results.totalExportRevenue.toFixed(2)}`;
+            totalInvestorOMCostResult.textContent = `$${results.totalInvestorOMCost.toFixed(2)}`;
+            netProfitForInvestorResult.textContent = `$${results.netProfitForInvestor.toFixed(2)}`;
+            
+            // Destroy existing chart instance if it exists
+            if (cashFlowChart) {
+                cashFlowChart.destroy();
+            }
+
+            // Create a new chart instance for investor cash flow
+            cashFlowChart = new Chart(cashFlowChartCanvas, {
+                type: 'bar', // Bar chart for annual cash flow
+                data: {
+                    labels: results.chartLabels,
+                    datasets: [{
+                        label: 'Projected Annual Investor Net Cash Flow ($)',
+                        data: results.annualNetCashFlowData,
+                        backgroundColor: (context) => {
+                            // Color bars based on positive/negative cash flow
+                            const value = context.raw;
+                            return value >= 0 ? 'rgba(59, 130, 246, 0.6)' : 'rgba(239, 68, 68, 0.6)'; // Blue for positive, Red for negative
+                        },
+                        borderColor: (context) => {
+                            const value = context.raw;
+                            return value >= 0 ? 'rgba(59, 130, 246, 1)' : 'rgba(239, 68, 68, 1)';
+                        },
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false, // Cash flow can be negative
+                            title: {
+                                display: true,
+                                text: 'Net Cash Flow ($)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return `$${value.toLocaleString()}`;
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'PPA Year',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += `$${context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Event listener for the calculate button
+        calculateBtn.addEventListener('click', () => {
+            const results = calculatePPADetails();
+            displayResults(results);
+        });
+
+        // Initial calculation and display on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Delay the initial chart rendering slightly to allow DOM to settle
+            setTimeout(() => {
+                const results = calculatePPADetails();
+                displayResults(results);
+            }, 100); // 100ms delay
+        });
+
+    </script>
+</body>
+</html>
