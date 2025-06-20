@@ -81,8 +81,7 @@
             #printCustomerReportBtn,
             .add-remove-btn, 
             #getInsightsBtn, 
-            #insightsOutput,
-            .hidden-print { /* Utility class for elements always hidden in print */
+            #insightsOutput {
                 display: none !important;
             }
             
@@ -181,13 +180,15 @@
             body.print-customer-report .input-section {
                 display: none !important; /* Hide input section */
             }
-            body.print-customer-report .summary-investor-section, /* Hide investor summary */
-            body.print-customer-report .system-buyout-section, /* Hide buyout schedule */
-            body.print-customer-report #investorCashFlowChart { /* Hide investor chart */
+            /* Hide investor-specific sections */
+            body.print-customer-report .summary-investor-section, 
+            body.print-customer-report #investorCashFlowChart { 
                 display: none !important;
             }
-            body.print-customer-report .customer-financials-section {
-                display: block !important; /* Ensure customer section is visible */
+            /* Show customer-specific sections */
+            body.print-customer-report .customer-financials-section,
+            body.print-customer-report .system-buyout-section { /* Show buyout for customer report */
+                display: block !important; 
                 width: 100% !important;
                 max-height: none !important;
                 overflow-y: visible !important;
@@ -365,35 +366,37 @@
 
         <!-- Results Display Section -->
         <div class="lg:w-1/2 bg-blue-50 p-8 rounded-lg shadow-inner flex flex-col max-h-screen overflow-y-auto results-section">
-            <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Investor Financials Estimate</h2>
+            <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center summary-investor-section customer-financials-section">Project Financials Estimate</h2>
             <div id="projectInfo" class="text-gray-700 text-center mb-6">
                 <p class="text-xl font-semibold"><span id="displayProjectName"></span></p>
                 <p class="text-md text-gray-600"><span id="displayProjectDate"></span></p>
             </div>
             <div id="results" class="space-y-4 text-gray-700">
-                <p class="text-lg"><span class="font-semibold text-blue-700">Project IRR:</span> <span id="projectIRRResult">0.00%</span> <span id="irrDisclaimer" class="text-sm font-medium"></span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Investor ROI:</span> <span id="investorROIResult">0.00%</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Net Present Value (NPV):</span> <span id="netPresentValueResult">$0.00</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Payback Period:</span> <span id="paybackPeriodResult">N/A</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Levelized Cost of Energy (LCOE):</span> <span id="lcoeResult">$0.00/kWh</span></p>
+                <div class="summary-investor-section">
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Project IRR:</span> <span id="projectIRRResult">0.00%</span> <span id="irrDisclaimer" class="text-sm font-medium"></span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Investor ROI:</span> <span id="investorROIResult">0.00%</span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Net Present Value (NPV):</span> <span id="netPresentValueResult">$0.00</span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Payback Period:</span> <span id="paybackPeriodResult">N/A</span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Levelized Cost of Energy (LCOE):</span> <span id="lcoeResult">$0.00/kWh</span></p>
+                    
+                    <hr class="my-6 border-t-2 border-blue-200"> <!-- Separator -->
+
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Summary of Investor Cash Flows and Energy</h3>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Initial Total Investment:</span> <span id="initialTotalInvestmentResult">$0.00</span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Year 1 Net Return:</span> <span id="year1NetReturnResult">$0.00</span></p> 
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Year 1 Return Percentage:</span> <span id="year1ReturnPercentageResult">0.00%</span></p> 
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Generated (over PPA Term):</span> <span id="totalSolarEnergyGeneratedResult">0 kWh</span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Sold to Customer:</span> <span id="totalSolarEnergySoldToCustomerResult">0 kWh</span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Exported:</span> <span id="totalSolarEnergyExportedResult">0 kWh</span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Total PPA Revenue from Customer:</span> <span id="totalPPARevenueCustomerResult">$0.00</span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Total Revenue from Export:</span> <span id="totalExportRevenueResult">$0.00</span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Total Investor O&M Cost:</span> <span id="totalInvestorOMCostResult">$0.00</span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Total Other Annual Costs:</span> <span id="totalOtherAnnualCostsResult">$0.00</span></p> <!-- Consolidated total -->
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Net Profit for Investor:</span> <span id="netProfitForInvestorResult">$0.00</span></p>
+                    <p class="text-lg"><span class="font-semibold text-blue-700">Terminal Payment:</span> <span id="terminalPaymentResult">$0.00</span></p> <!-- New output for terminal payment -->
+                </div>
                 
                 <hr class="my-6 border-t-2 border-blue-200"> <!-- Separator -->
-
-                <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center summary-investor-section">Summary of Investor Cash Flows and Energy</h3>
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Initial Total Investment:</span> <span id="initialTotalInvestmentResult">$0.00</span></p>
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Year 1 Net Return:</span> <span id="year1NetReturnResult">$0.00</span></p> 
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Year 1 Return Percentage:</span> <span id="year1ReturnPercentageResult">0.00%</span></p> 
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Solar Energy Generated (over PPA Term):</span> <span id="totalSolarEnergyGeneratedResult">0 kWh</span></p>
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Solar Energy Sold to Customer:</span> <span id="totalSolarEnergySoldToCustomerResult">0 kWh</span></p>
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Solar Energy Exported:</span> <span id="totalSolarEnergyExportedResult">0 kWh</span></p>
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total PPA Revenue from Customer:</span> <span id="totalPPARevenueCustomerResult">$0.00</span></p>
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Revenue from Export:</span> <span id="totalExportRevenueResult">$0.00</span></p>
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Investor O&M Cost:</span> <span id="totalInvestorOMCostResult">$0.00</span></p>
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Other Annual Costs:</span> <span id="totalOtherAnnualCostsResult">$0.00</span></p> <!-- Consolidated total -->
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Net Profit for Investor:</span> <span id="netProfitForInvestorResult">$0.00</span></p>
-                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Terminal Payment:</span> <span id="terminalPaymentResult">$0.00</span></p> <!-- New output for terminal payment -->
-                
-                <hr class="my-6 border-t-2 border-blue-200 summary-investor-section"> <!-- Separator -->
 
                 <h3 class="text-xl font-semibold text-blue-700 mb-6 text-center customer-financials-section">Customer Financials Estimate</h3>
                 <p class="text-lg customer-financials-section"><span class="font-semibold text-blue-700">Total Customer Grid Cost (without solar):</span> <span id="totalCustomerGridCostNoSolarResult">$0.00</span></p>
@@ -462,8 +465,8 @@
         const insightsOutput = document.getElementById('insightsOutput'); 
         const dynamicOtherCostsContainer = document.getElementById('dynamicOtherCostsContainer');
         const addOtherAnnualCostBtn = document.getElementById('addOtherAnnualCostBtn');
-        const printFullReportBtn = document.getElementById('printFullReportBtn'); // New button
-        const printCustomerReportBtn = document.getElementById('printCustomerReportBtn'); // New button
+        const printFullReportBtn = document.getElementById('printFullReportBtn'); 
+        const printCustomerReportBtn = document.getElementById('printCustomerReportBtn'); 
 
         // Get references to result display elements
         const displayProjectName = document.getElementById('displayProjectName'); 
