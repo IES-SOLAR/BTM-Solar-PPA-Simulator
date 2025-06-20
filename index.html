@@ -58,14 +58,15 @@
         @media print {
             body {
                 background-color: #fff;
+                margin: 0;
+                padding: 0;
             }
             .container {
                 max-width: 100%;
-                box-shadow: none !important; /* Important to remove box-shadow in print */
+                width: 100%;
+                box-shadow: none !important;
                 padding: 0;
-            }
-            .lg\:w-1\/2 {
-                width: 100% !important;
+                display: block; /* Ensure it's block for full width */
             }
             .lg\:flex-row {
                 flex-direction: column !important;
@@ -73,28 +74,126 @@
             .gap-8, .lg\:gap-12 {
                 gap: 1rem !important;
             }
-            /* Hide input section and add/remove buttons */
-            .input-section, #printBtn, .add-remove-btn, #getInsightsBtn, #insightsOutput {
+
+            /* --- Base print styles: Hide non-essential elements --- */
+            .input-section, 
+            #printFullReportBtn, /* Specific button IDs */
+            #printCustomerReportBtn,
+            .add-remove-btn, 
+            #getInsightsBtn, 
+            #insightsOutput,
+            .hidden-print { /* Utility class for elements always hidden in print */
                 display: none !important;
             }
-            /* Ensure results section is visible and properly formatted */
+            
             .results-section {
-                display: block !important; /* Ensure it's not hidden */
+                display: block !important;
                 width: 100% !important;
                 max-height: none !important;
                 overflow-y: visible !important;
                 background-color: #fff !important;
                 box-shadow: none !important;
+                padding: 0 1rem !important; /* Add some padding for readability */
+            }
+
+            /* --- Specific print modes --- */
+
+            /* Print Mode: Full Report (default for window.print()) */
+            body.print-full-report .input-section {
+                display: block !important; /* Show inputs for full report */
+                width: 100% !important;
+                padding: 0 1rem !important;
+            }
+            body.print-full-report .input-section h1,
+            body.print-full-report .input-section p {
+                text-align: left !important; /* Align text left in print */
+            }
+            body.print-full-report .input-section label {
+                width: auto !important; /* Allow labels to size naturally */
+                display: block !important; /* Ensure labels are on their own line */
+            }
+            body.print-full-report .input-section input,
+            body.print-full-report .input-section select {
+                border: none !important; /* Remove borders */
+                padding: 0 !important;
+                width: auto !important; /* Prevent stretching */
+                background: transparent !important;
+            }
+            body.print-full-report .input-section .space-y-6 > div {
+                display: flex !important;
+                justify-content: space-between !important;
+                padding: 0.2rem 0 !important;
+                border-bottom: 1px dashed #eee; /* Light separator */
+                font-size: 0.9em;
+            }
+            body.print-full-report .input-section .space-y-6 > div:last-of-type {
+                border-bottom: none;
+            }
+            body.print-full-report .input-section .space-y-6 > div > label {
+                 flex-basis: 70%; /* Give label more space */
+                 font-weight: 500;
+            }
+            body.print-full-report .input-section .space-y-6 > div > input,
+            body.print-full-report .input-section .space-y-6 > div > select {
+                flex-basis: 30%; /* Value smaller */
+                text-align: right;
+            }
+            body.print-full-report .input-section p.text-xs {
+                display: none; /* Hide small help text in print */
+            }
+            body.print-full-report #dynamicOtherCostsContainer {
+                border: none !important;
+                background-color: transparent !important;
                 padding: 0 !important;
             }
-            /* Adjust margins/padding for print if necessary */
-            .results-section > h2,
-            .results-section > hr,
-            .results-section > div {
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-                padding-left: 0 !important;
-                padding-right: 0 !important;
+            body.print-full-report #dynamicOtherCostsContainer h4 {
+                font-size: 1.1em;
+                margin-top: 1em;
+            }
+            body.print-full-report .other-annual-cost-row {
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                border-bottom: 1px dashed #eee;
+                padding: 0.2rem 0 !important;
+                font-size: 0.9em;
+            }
+            body.print-full-report .other-annual-cost-row > div {
+                width: auto !important;
+                margin-right: 0.5rem;
+                padding: 0 !important;
+            }
+            body.print-full-report .other-annual-cost-row input, 
+            body.print-full-report .other-annual-cost-row select {
+                border: none !important;
+                background-color: transparent !important;
+                text-align: right;
+                font-size: 1em;
+            }
+            body.print-full-report .other-annual-cost-row label {
+                display: none !important; /* Hide labels inside dynamic rows */
+            }
+            body.print-full-report .other-annual-cost-row input[type="text"] {
+                text-align: left; /* Description should remain left-aligned */
+            }
+
+
+            /* Print Mode: Customer Report */
+            body.print-customer-report .input-section {
+                display: none !important; /* Hide input section */
+            }
+            body.print-customer-report .summary-investor-section, /* Hide investor summary */
+            body.print-customer-report .system-buyout-section, /* Hide buyout schedule */
+            body.print-customer-report #investorCashFlowChart { /* Hide investor chart */
+                display: none !important;
+            }
+            body.print-customer-report .customer-financials-section {
+                display: block !important; /* Ensure customer section is visible */
+                width: 100% !important;
+                max-height: none !important;
+                overflow-y: visible !important;
+                background-color: #fff !important;
+                box-shadow: none !important;
+                padding: 0 1rem !important;
             }
         }
     </style>
@@ -280,39 +379,39 @@
                 
                 <hr class="my-6 border-t-2 border-blue-200"> <!-- Separator -->
 
-                <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Summary of Investor Cash Flows and Energy</h3>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Initial Total Investment:</span> <span id="initialTotalInvestmentResult">$0.00</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Year 1 Net Return:</span> <span id="year1NetReturnResult">$0.00</span></p> <!-- New output -->
-                <p class="text-lg"><span class="font-semibold text-blue-700">Year 1 Return Percentage:</span> <span id="year1ReturnPercentageResult">0.00%</span></p> <!-- New output -->
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Generated (over PPA Term):</span> <span id="totalSolarEnergyGeneratedResult">0 kWh</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Sold to Customer:</span> <span id="totalSolarEnergySoldToCustomerResult">0 kWh</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Exported:</span> <span id="totalSolarEnergyExportedResult">0 kWh</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total PPA Revenue from Customer:</span> <span id="totalPPARevenueCustomerResult">$0.00</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total Revenue from Export:</span> <span id="totalExportRevenueResult">$0.00</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total Investor O&M Cost:</span> <span id="totalInvestorOMCostResult">$0.00</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total Other Annual Costs:</span> <span id="totalOtherAnnualCostsResult">$0.00</span></p> <!-- Consolidated total -->
-                <p class="text-lg"><span class="font-semibold text-blue-700">Net Profit for Investor:</span> <span id="netProfitForInvestorResult">$0.00</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Terminal Payment:</span> <span id="terminalPaymentResult">$0.00</span></p> <!-- New output for terminal payment -->
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center summary-investor-section">Summary of Investor Cash Flows and Energy</h3>
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Initial Total Investment:</span> <span id="initialTotalInvestmentResult">$0.00</span></p>
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Year 1 Net Return:</span> <span id="year1NetReturnResult">$0.00</span></p> 
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Year 1 Return Percentage:</span> <span id="year1ReturnPercentageResult">0.00%</span></p> 
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Solar Energy Generated (over PPA Term):</span> <span id="totalSolarEnergyGeneratedResult">0 kWh</span></p>
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Solar Energy Sold to Customer:</span> <span id="totalSolarEnergySoldToCustomerResult">0 kWh</span></p>
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Solar Energy Exported:</span> <span id="totalSolarEnergyExportedResult">0 kWh</span></p>
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total PPA Revenue from Customer:</span> <span id="totalPPARevenueCustomerResult">$0.00</span></p>
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Revenue from Export:</span> <span id="totalExportRevenueResult">$0.00</span></p>
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Investor O&M Cost:</span> <span id="totalInvestorOMCostResult">$0.00</span></p>
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Total Other Annual Costs:</span> <span id="totalOtherAnnualCostsResult">$0.00</span></p> <!-- Consolidated total -->
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Net Profit for Investor:</span> <span id="netProfitForInvestorResult">$0.00</span></p>
+                <p class="text-lg summary-investor-section"><span class="font-semibold text-blue-700">Terminal Payment:</span> <span id="terminalPaymentResult">$0.00</span></p> <!-- New output for terminal payment -->
                 
-                <hr class="my-6 border-t-2 border-blue-200"> <!-- Separator -->
+                <hr class="my-6 border-t-2 border-blue-200 summary-investor-section"> <!-- Separator -->
 
-                <h3 class="text-xl font-semibold text-blue-700 mb-6 text-center">Customer Financials Estimate</h3>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total Customer Grid Cost (without solar):</span> <span id="totalCustomerGridCostNoSolarResult">$0.00</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar PPA Cost for Customer:</span> <span id="totalSolarPPACostForCustomerResult">$0.00</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total Customer Grid Cost (with solar):</span> <span id="totalCustomerGridCostWithSolarResult">$0.00</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total Savings for Customer:</span> <span id="totalSavingsForCustomerResult">$0.00</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Average Annual Savings for Customer:</span> <span id="averageAnnualSavingsForCustomerResult">$0.00</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Savings per kWh for Customer:</span> <span id="savingsPerKwhForCustomerResult">$0.00/kWh</span></p>
-                <p class="text-lg"><span class="font-semibold text-blue-700">Percentage Saved per kWh for Customer:</span> <span id="percentageSavedPerKwhForCustomerResult">0.00%</span></p> <!-- New Output -->
-                <p class="text-lg"><span class="font-semibold text-blue-700">Total Customer Export Revenue:</span> <span id="totalCustomerExportRevenueResult">$0.00</span></p> <!-- New Output -->
+                <h3 class="text-xl font-semibold text-blue-700 mb-6 text-center customer-financials-section">Customer Financials Estimate</h3>
+                <p class="text-lg customer-financials-section"><span class="font-semibold text-blue-700">Total Customer Grid Cost (without solar):</span> <span id="totalCustomerGridCostNoSolarResult">$0.00</span></p>
+                <p class="text-lg customer-financials-section"><span class="font-semibold text-blue-700">Total Solar PPA Cost for Customer:</span> <span id="totalSolarPPACostForCustomerResult">$0.00</span></p>
+                <p class="text-lg customer-financials-section"><span class="font-semibold text-blue-700">Total Customer Grid Cost (with solar):</span> <span id="totalCustomerGridCostWithSolarResult">$0.00</span></p>
+                <p class="text-lg customer-financials-section"><span class="font-semibold text-blue-700">Total Savings for Customer:</span> <span id="totalSavingsForCustomerResult">$0.00</span></p>
+                <p class="text-lg customer-financials-section"><span class="font-semibold text-blue-700">Average Annual Savings for Customer:</span> <span id="averageAnnualSavingsForCustomerResult">$0.00</span></p>
+                <p class="text-lg customer-financials-section"><span class="font-semibold text-blue-700">Savings per kWh for Customer:</span> <span id="savingsPerKwhForCustomerResult">$0.00/kWh</span></p>
+                <p class="text-lg customer-financials-section"><span class="font-semibold text-blue-700">Percentage Saved per kWh for Customer:</span> <span id="percentageSavedPerKwhForCustomerResult">0.00%</span></p> 
+                <p class="text-lg customer-financials-section"><span class="font-semibold text-blue-700">Total Customer Export Revenue:</span> <span id="totalCustomerExportRevenueResult">$0.00</span></p> 
 
-                <hr class="my-6 border-t-2 border-blue-200"> <!-- Separator -->
+                <hr class="my-6 border-t-2 border-blue-200 system-buyout-section"> <!-- Separator -->
 
-                <h3 class="text-xl font-semibold text-blue-700 mb-2 text-center">System Buyout Schedule</h3>
-                <p class="text-sm text-gray-600 mb-4 text-center" id="buyoutDepreciationDescription">
+                <h3 class="text-xl font-semibold text-blue-700 mb-2 text-center system-buyout-section">System Buyout Schedule</h3>
+                <p class="text-sm text-gray-600 mb-4 text-center system-buyout-section" id="buyoutDepreciationDescription">
                     (Initial Buyout Value = Initial System Cost + 20% Premium. Depreciation rates are user-defined for specific periods.)
                 </p>
-                <div id="buyoutScheduleTableContainer" class="overflow-x-auto rounded-lg shadow">
+                <div id="buyoutScheduleTableContainer" class="overflow-x-auto rounded-lg shadow system-buyout-section">
                     <table class="table-auto min-w-full">
                         <thead>
                             <tr>
@@ -326,7 +425,7 @@
                     </table>
                 </div>
 
-                <div id="investorCashFlowChart" class="mt-8">
+                <div id="investorCashFlowChart" class="mt-8 summary-investor-section">
                     <h3 class="text-xl font-semibold text-blue-700 mb-4 text-center">Projected Annual Investor Net Cash Flow</h3>
                     <!-- Fixed height wrapper for the canvas -->
                     <div class="relative w-full h-64">
@@ -341,9 +440,14 @@
                     <!-- LLM generated insights will appear here -->
                     <p class="text-center text-gray-500">Click "✨ Get Project Insights" to analyze the project financials.</p>
                 </div>
-                <button id="printBtn" class="w-full bg-green-600 text-white py-3 mt-8 rounded-md shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300 ease-in-out">
-                    Print Results / Save as PDF
-                </button>
+                <div class="flex flex-col md:flex-row gap-4 mt-8">
+                    <button id="printFullReportBtn" class="flex-1 bg-green-600 text-white py-3 rounded-md shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300 ease-in-out">
+                        Print Full Report
+                    </button>
+                    <button id="printCustomerReportBtn" class="flex-1 bg-indigo-600 text-white py-3 rounded-md shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 ease-in-out">
+                        Print Customer Report
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -354,11 +458,12 @@
     <script>
         // Get references to static elements that are only initialized once and not prone to being null
         const calculateBtn = document.getElementById('calculateBtn');
-        const printBtn = document.getElementById('printBtn'); 
         const getInsightsBtn = document.getElementById('getInsightsBtn'); 
         const insightsOutput = document.getElementById('insightsOutput'); 
         const dynamicOtherCostsContainer = document.getElementById('dynamicOtherCostsContainer');
         const addOtherAnnualCostBtn = document.getElementById('addOtherAnnualCostBtn');
+        const printFullReportBtn = document.getElementById('printFullReportBtn'); // New button
+        const printCustomerReportBtn = document.getElementById('printCustomerReportBtn'); // New button
 
         // Get references to result display elements
         const displayProjectName = document.getElementById('displayProjectName'); 
@@ -823,6 +928,7 @@
             const lcoe = totalLifetimeEnergyProducedForLCOE > 0 ? (totalLifetimeCostsForLCOE / totalLifetimeEnergyProducedForLCOE) : 0;
 
             // Calculate Savings per kWh for Customer - simplified as requested
+            // This is the difference between the current grid price and the initial PPA price.
             const savingsPerKwhForCustomer = currentGridPrice - initialPPAPrice;
             const percentageSavedPerKwhForCustomer = (currentGridPrice > 0) ? (savingsPerKwhForCustomer / currentGridPrice) * 100 : 0;
 
@@ -1078,10 +1184,27 @@
             displayResults(results);
         });
 
-        // Event listener for the print button
-        printBtn.addEventListener('click', () => {
+        // Event listener for the print buttons
+        printFullReportBtn.addEventListener('click', () => {
+            // Add a class to body to trigger full report print styles
+            document.body.classList.add('print-full-report');
             window.print();
+            // Remove the class after printing (or a short delay)
+            setTimeout(() => {
+                document.body.classList.remove('print-full-report');
+            }, 500); 
         });
+
+        printCustomerReportBtn.addEventListener('click', () => {
+            // Add a class to body to trigger customer report print styles
+            document.body.classList.add('print-customer-report');
+            window.print();
+            // Remove the class after printing (or a short delay)
+            setTimeout(() => {
+                document.body.classList.remove('print-customer-report');
+            }, 500);
+        });
+
 
         // Event listener for the Get Insights button
         getInsightsBtn.addEventListener('click', getProjectInsights); 
