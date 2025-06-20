@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Behind-the-Meter Solar PPA Simulator (Investor View)</title>
+    <title>Behind-the-Meter Solar PPA Simulator (Investor & Customer View)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -103,7 +103,7 @@
     <div class="container bg-white shadow-xl rounded-xl p-8 md:p-12 lg:p-16 flex flex-col lg:flex-row gap-8 lg:gap-12 w-full max-w-7xl">
         <!-- Simulator Input Section -->
         <div class="lg:w-1/2 input-section">
-            <h1 class="text-4xl font-extrabold text-gray-900 mb-8 text-center lg:text-left">BTM Solar PPA Simulator (Investor View)</h1>
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-8 text-center lg:text-left">BTM Solar PPA Simulator (Investor & Customer View)</h1>
             <p class="text-gray-600 mb-8 leading-relaxed">
                 Model the financial returns of a Behind-the-Meter Solar Power Purchase Agreement from an investor's perspective.
                 Enter your project details to estimate ROI and IRR.
@@ -221,12 +221,40 @@
                     <input type="number" id="discountRate" value="5" min="0" step="0.1" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
                 </div>
 
+                <!-- Terminal Payment -->
+                <div>
+                    <label for="terminalPayment" class="block text-sm font-medium text-gray-700 mb-2">Terminal Payment at End of PPA Term ($)</label>
+                    <p class="text-xs text-gray-500 mb-2">Defaulted to the system's last buyout price. Included in IRR/NPV.</p>
+                    <input type="number" id="terminalPayment" value="0" min="0" step="100" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+
                 <h3 class="text-xl font-semibold text-gray-800 pt-4 pb-2">Customer Consumption Profile</h3>
                 <!-- Customer Self-Consumption Percentage -->
                 <div>
                     <label for="customerSelfConsumptionPercentage" class="block text-sm font-medium text-gray-700 mb-2">Customer Self-Consumption Percentage of Solar Production (%)</label>
                     <p class="text-xs text-gray-500 mb-2">This is the percentage of generated solar energy the customer consumes directly. The remaining percentage will be considered 'exported energy'.</p>
                     <input type="number" id="customerSelfConsumptionPercentage" value="80" min="0" max="100" step="1" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                 <!-- Customer Annual Electricity Consumption -->
+                <div>
+                    <label for="customerAnnualConsumption" class="block text-sm font-medium text-gray-700 mb-2">Customer's Annual Electricity Consumption (kWh/year)</label>
+                    <input type="number" id="customerAnnualConsumption" value="150000" min="1000" step="1000" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                <!-- Current Grid Electricity Price -->
+                <div>
+                    <label for="currentGridPrice" class="block text-sm font-medium text-gray-700 mb-2">Current Grid Electricity Price ($/kWh)</label>
+                    <input type="number" id="currentGridPrice" value="0.15" min="0.01" step="0.01" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                <!-- Grid Electricity Price Inflation Rate -->
+                <div>
+                    <label for="gridInflationRate" class="block text-sm font-medium text-gray-700 mb-2">Annual Grid Electricity Price Inflation Rate (%)</label>
+                    <input type="number" id="gridInflationRate" value="3" min="0" step="0.1" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
+                </div>
+                <!-- Customer Feed-in Tariff -->
+                <div>
+                    <label for="customerFeedInTariff" class="block text-sm font-medium text-gray-700 mb-2">Customer Feed-in Tariff ($/kWh Exported by Customer)</label>
+                    <p class="text-xs text-gray-500 mb-2">Revenue customer receives for energy exported to the grid (if customer owns the system).</p>
+                    <input type="number" id="customerFeedInTariff" value="0.00" min="0.00" step="0.001" class="focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300">
                 </div>
                 
                 <!-- Calculate Button -->
@@ -252,8 +280,10 @@
                 
                 <hr class="my-6 border-t-2 border-blue-200"> <!-- Separator -->
 
-                <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Summary of Cash Flows and Energy</h3>
+                <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Summary of Investor Cash Flows and Energy</h3>
                 <p class="text-lg"><span class="font-semibold text-blue-700">Initial Total Investment:</span> <span id="initialTotalInvestmentResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Year 1 Net Return:</span> <span id="year1NetReturnResult">$0.00</span></p> <!-- New output -->
+                <p class="text-lg"><span class="font-semibold text-blue-700">Year 1 Return Percentage:</span> <span id="year1ReturnPercentageResult">0.00%</span></p> <!-- New output -->
                 <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Generated (over PPA Term):</span> <span id="totalSolarEnergyGeneratedResult">0 kWh</span></p>
                 <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Sold to Customer:</span> <span id="totalSolarEnergySoldToCustomerResult">0 kWh</span></p>
                 <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar Energy Exported:</span> <span id="totalSolarEnergyExportedResult">0 kWh</span></p>
@@ -262,23 +292,21 @@
                 <p class="text-lg"><span class="font-semibold text-blue-700">Total Investor O&M Cost:</span> <span id="totalInvestorOMCostResult">$0.00</span></p>
                 <p class="text-lg"><span class="font-semibold text-blue-700">Total Other Annual Costs:</span> <span id="totalOtherAnnualCostsResult">$0.00</span></p> <!-- Consolidated total -->
                 <p class="text-lg"><span class="font-semibold text-blue-700">Net Profit for Investor:</span> <span id="netProfitForInvestorResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Terminal Payment:</span> <span id="terminalPaymentResult">$0.00</span></p> <!-- New output for terminal payment -->
                 
                 <hr class="my-6 border-t-2 border-blue-200"> <!-- Separator -->
 
-                <h3 class="text-xl font-semibold text-blue-700 mb-2 text-center">Annual Breakdown of Other Costs</h3>
-                <div id="annualOtherCostsTableContainer" class="overflow-x-auto rounded-lg shadow mb-8">
-                    <table class="table-auto min-w-full">
-                        <thead>
-                            <tr>
-                                <th>Year</th>
-                                <th>Annual Other Cost</th>
-                            </tr>
-                        </thead>
-                        <tbody id="annualOtherCostsTableBody">
-                            <!-- Annual Other Costs breakdown will be populated here by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
+                <h3 class="text-xl font-semibold text-blue-700 mb-6 text-center">Customer Financials Estimate</h3>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Total Customer Grid Cost (without solar):</span> <span id="totalCustomerGridCostNoSolarResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Total Solar PPA Cost for Customer:</span> <span id="totalSolarPPACostForCustomerResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Total Customer Grid Cost (with solar):</span> <span id="totalCustomerGridCostWithSolarResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Total Savings for Customer:</span> <span id="totalSavingsForCustomerResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Average Annual Savings for Customer:</span> <span id="averageAnnualSavingsForCustomerResult">$0.00</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Savings per kWh for Customer:</span> <span id="savingsPerKwhForCustomerResult">$0.00/kWh</span></p>
+                <p class="text-lg"><span class="font-semibold text-blue-700">Percentage Saved per kWh for Customer:</span> <span id="percentageSavedPerKwhForCustomerResult">0.00%</span></p> <!-- New Output -->
+                <p class="text-lg"><span class="font-semibold text-blue-700">Total Customer Export Revenue:</span> <span id="totalCustomerExportRevenueResult">$0.00</span></p> <!-- New Output -->
+
+                <hr class="my-6 border-t-2 border-blue-200"> <!-- Separator -->
 
                 <h3 class="text-xl font-semibold text-blue-700 mb-2 text-center">System Buyout Schedule</h3>
                 <p class="text-sm text-gray-600 mb-4 text-center" id="buyoutDepreciationDescription">
@@ -327,8 +355,8 @@
         // Get references to static elements that are only initialized once and not prone to being null
         const calculateBtn = document.getElementById('calculateBtn');
         const printBtn = document.getElementById('printBtn'); 
-        const getInsightsBtn = document.getElementById('getInsightsBtn'); // New button
-        const insightsOutput = document.getElementById('insightsOutput'); // New output div
+        const getInsightsBtn = document.getElementById('getInsightsBtn'); 
+        const insightsOutput = document.getElementById('insightsOutput'); 
         const dynamicOtherCostsContainer = document.getElementById('dynamicOtherCostsContainer');
         const addOtherAnnualCostBtn = document.getElementById('addOtherAnnualCostBtn');
 
@@ -340,8 +368,10 @@
         const netPresentValueResult = document.getElementById('netPresentValueResult');
         const paybackPeriodResult = document.getElementById('paybackPeriodResult');
         const lcoeResult = document.getElementById('lcoeResult');
-        const irrDisclaimer = document.getElementById('irrDisclaimer'); // Get the disclaimer element
+        const irrDisclaimer = document.getElementById('irrDisclaimer'); 
         const initialTotalInvestmentResult = document.getElementById('initialTotalInvestmentResult'); 
+        const year1NetReturnResult = document.getElementById('year1NetReturnResult'); // New output element
+        const year1ReturnPercentageResult = document.getElementById('year1ReturnPercentageResult'); // New output element
         const totalSolarEnergyGeneratedResult = document.getElementById('totalSolarEnergyGeneratedResult');
         const totalSolarEnergySoldToCustomerResult = document.getElementById('totalSolarEnergySoldToCustomerResult');
         const totalSolarEnergyExportedResult = document.getElementById('totalSolarEnergyExportedResult'); 
@@ -350,8 +380,16 @@
         const totalInvestorOMCostResult = document.getElementById('totalInvestorOMCostResult');
         const totalOtherAnnualCostsResult = document.getElementById('totalOtherAnnualCostsResult'); 
         const netProfitForInvestorResult = document.getElementById('netProfitForInvestorResult');
+        const terminalPaymentResult = document.getElementById('terminalPaymentResult'); 
+        const totalCustomerGridCostNoSolarResult = document.getElementById('totalCustomerGridCostNoSolarResult'); 
+        const totalSolarPPACostForCustomerResult = document.getElementById('totalSolarPPACostForCustomerResult'); 
+        const totalCustomerGridCostWithSolarResult = document.getElementById('totalCustomerGridCostWithSolarResult'); 
+        const totalSavingsForCustomerResult = document.getElementById('totalSavingsForCustomerResult'); 
+        const averageAnnualSavingsForCustomerResult = document.getElementById('averageAnnualSavingsForCustomerResult'); 
+        const savingsPerKwhForCustomerResult = document.getElementById('savingsPerKwhForCustomerResult'); 
+        const percentageSavedPerKwhForCustomerResult = document.getElementById('percentageSavedPerKwhForCustomerResult'); 
+        const totalCustomerExportRevenueResult = document.getElementById('totalCustomerExportRevenueResult'); 
         const buyoutScheduleTableBody = document.getElementById('buyoutScheduleTableBody'); 
-        const annualOtherCostsTableBody = document.getElementById('annualOtherCostsTableBody'); // New element
         const cashFlowChartCanvas = document.getElementById('cashFlowChart');
         let cashFlowChart; 
 
@@ -369,7 +407,6 @@
             const year = today.getFullYear(); 
             const month = String(today.getMonth() + 1).padStart(2, '0'); 
             const day = String(today.getDate()).padStart(2, '0');
-            // Access projectDateInput directly here as it's part of initial DOM load
             const projectDateInput = document.getElementById('projectDate');
             if (projectDateInput) {
                 projectDateInput.value = `${year}-${month}-${day}`;
@@ -518,7 +555,12 @@
             const depreciationRateYear11_15Input = document.getElementById('depreciationRateYear11_15'); 
             const depreciationRateYear16_20Input = document.getElementById('depreciationRateYear16_20'); 
             const discountRateInput = document.getElementById('discountRate');
+            const terminalPaymentInput = document.getElementById('terminalPayment'); 
             const customerSelfConsumptionPercentageInput = document.getElementById('customerSelfConsumptionPercentage');
+            const customerAnnualConsumptionInput = document.getElementById('customerAnnualConsumption'); 
+            const currentGridPriceInput = document.getElementById('currentGridPrice'); 
+            const gridInflationRateInput = document.getElementById('gridInflationRate'); 
+            const customerFeedInTariffInput = document.getElementById('customerFeedInTariff'); 
 
 
             // Retrieve input values
@@ -535,6 +577,10 @@
             const investorOMRate = parseFloat(investorOMRateInput.value) / 100; 
             const discountRate = parseFloat(discountRateInput.value) / 100;
             const customerSelfConsumptionPercentage = parseFloat(customerSelfConsumptionPercentageInput.value) / 100;
+            const customerAnnualConsumption = parseFloat(customerAnnualConsumptionInput.value); 
+            const currentGridPrice = parseFloat(currentGridPriceInput.value); 
+            const gridInflationRate = parseFloat(gridInflationRateInput.value) / 100; 
+            const customerFeedInTariff = parseFloat(customerFeedInTariffInput.value); 
 
             // Retrieve dynamic depreciation rates
             const depRate1_5 = parseFloat(depreciationRateYear1_5Input.value) / 100;
@@ -571,11 +617,20 @@
             let totalLifetimeCostsForLCOE = initialTotalInvestment; 
             let totalLifetimeEnergyProducedForLCOE = 0;
             
-            const cashFlows = [-initialTotalInvestment]; 
+            const cashFlows = [-initialTotalInvestment]; // Start with initial negative cash flow
             const annualNetCashFlowData = [];
-            const annualOtherCostsBreakdown = []; // To store annual sums of dynamic other costs
+            const annualOtherCostsBreakdown = []; 
             const chartLabels = [];
             const buyoutSchedule = [];
+
+            // Customer-side tracking
+            let totalCustomerGridCostNoSolar = 0;
+            let totalSolarPPACostForCustomer = 0;
+            let totalCustomerGridCostWithSolar = 0;
+            let totalSavingsForCustomer = 0;
+            let totalCustomerExportRevenue = 0; 
+            let year1NetReturn = 0; // Initialize Year 1 Net Return
+
 
             // Calculate fixed annual O&M cost for investor
             const annualFixedOMCostBase = initialSystemCost * investorOMRate; 
@@ -614,7 +669,7 @@
                 const effectiveSolarGeneration = annualSolarGeneration * (1 - systemDegradationRate)**(year - 1);
                 
                 // Energy consumed by customer and exported
-                const consumedByCustomer = effectiveSolarGeneration * customerSelfConsumptionPercentage;
+                const consumedByCustomerSolarPPA = effectiveSolarGeneration * customerSelfConsumptionPercentage;
                 const exportedEnergy = effectiveSolarGeneration * (1 - customerSelfConsumptionPercentage); 
                 
                 // Adjust PPA price for escalation
@@ -624,7 +679,7 @@
                 const effectiveExportPrice = initialExportPrice * (1 + exportPriceEscalationRate)**(year - 1);
 
                 // Investor's annual revenue from customer consumption
-                const investorAnnualRevenueCustomer = consumedByCustomer * effectivePPAPrice;
+                const investorAnnualRevenueCustomer = consumedByCustomerSolarPPA * effectivePPAPrice;
 
                 // Investor's annual revenue from exported energy
                 const investorAnnualRevenueExport = exportedEnergy * effectiveExportPrice;
@@ -634,6 +689,7 @@
 
                 // Calculate dynamic other annual costs for the current year
                 let currentYearOtherCostsTotal = 0;
+                
                 let profitBaseForPercentOfProfit = totalInvestorAnnualRevenue - annualFixedOMCostBase; 
 
                 // Pass 1: Calculate fixed, per_kwh_sold, percent_initial_cost, per_kw_installed
@@ -645,7 +701,7 @@
                                 calculatedCost = cost.value;
                                 break;
                             case 'per_kwh_sold':
-                                calculatedCost = cost.value * consumedByCustomer;
+                                calculatedCost = cost.value * consumedByCustomerSolarPPA;
                                 break;
                             case 'percent_initial_cost':
                                 calculatedCost = cost.value / 100 * initialSystemCost;
@@ -670,7 +726,7 @@
                     }
                 });
                 
-                annualDynamicOtherCostsSum = currentYearOtherCostsTotal; // This now holds all dynamic costs for the year
+                annualDynamicOtherCostsSum = currentYearOtherCostsTotal; 
                 annualOtherCostsBreakdown.push({ year: year, value: annualDynamicOtherCostsSum }); // Store for breakdown table
 
 
@@ -680,9 +736,14 @@
                 // Investor's annual net cash flow (total revenue minus all annual operating costs)
                 const investorAnnualNetCashFlow = totalInvestorAnnualRevenue - totalAnnualOperatingCosts;
 
-                // Accumulate totals
+                // Capture Year 1 Net Return
+                if (year === 1) {
+                    year1NetReturn = investorAnnualNetCashFlow;
+                }
+
+                // Accumulate totals (Investor side)
                 totalSolarEnergyGenerated += effectiveSolarGeneration;
-                totalSolarEnergySoldToCustomer += consumedByCustomer;
+                totalSolarEnergySoldToCustomer += consumedByCustomerSolarPPA;
                 totalSolarEnergyExported += exportedEnergy;
                 totalPPARevenueCustomer += investorAnnualRevenueCustomer;
                 totalExportRevenue += investorAnnualRevenueExport;
@@ -708,7 +769,42 @@
                         }
                     }
                 }
+
+                // --- Customer-side calculations for the current year ---
+                const effectiveGridPrice = currentGridPrice * (1 + gridInflationRate)**(year - 1);
+                
+                const annualGridCostNoSolarThisYear = customerAnnualConsumption * effectiveGridPrice;
+                const remainingGridPurchaseForCustomer = Math.max(0, customerAnnualConsumption - consumedByCustomerSolarPPA);
+                const annualGridCostWithSolarThisYear = remainingGridPurchaseForCustomer * effectiveGridPrice;
+                
+                const annualSolarPPACostForCustomerThisYear = consumedByCustomerSolarPPA * effectivePPAPrice;
+                
+                // Customer receives revenue for exported energy
+                const customerExportedEnergy = effectiveSolarGeneration - consumedByCustomerSolarPPA; 
+                const customerAnnualExportRevenue = customerExportedEnergy * customerFeedInTariff; 
+
+
+                const totalAnnualCustomerCostWithSolar = annualSolarPPACostForCustomerThisYear + annualGridCostWithSolarThisYear - customerAnnualExportRevenue; 
+                const annualCustomerSavings = annualGridCostNoSolarThisYear - totalAnnualCustomerCostWithSolar;
+
+                // Accumulate totals (Customer side)
+                totalCustomerGridCostNoSolar += annualGridCostNoSolarThisYear;
+                totalSolarPPACostForCustomer += annualSolarPPACostForCustomerThisYear;
+                totalCustomerGridCostWithSolar += totalAnnualCustomerCostWithSolar;
+                totalSavingsForCustomer += annualCustomerSavings;
+                totalCustomerExportRevenue += customerAnnualExportRevenue; 
             }
+            
+            // Add Terminal Payment as a positive cash flow at the end of the PPA term
+            const terminalPayment = parseFloat(terminalPaymentInput.value);
+            if (!isNaN(terminalPayment) && ppaTerm > 0) {
+                if (cashFlows.length === ppaTerm + 1) {
+                   cashFlows[ppaTerm] += terminalPayment; 
+                } else if (ppaTerm > 0) {
+                   cashFlows.push(terminalPayment); 
+                }
+            }
+
 
             // Calculate Net Profit for Investor (includes all accumulated costs)
             const netProfitForInvestor = totalPPARevenueCustomer + totalExportRevenue - totalInvestorOMCost - totalDynamicOtherCostsAccumulated;
@@ -726,11 +822,48 @@
             // Calculate Levelized Cost of Energy (LCOE)
             const lcoe = totalLifetimeEnergyProducedForLCOE > 0 ? (totalLifetimeCostsForLCOE / totalLifetimeEnergyProducedForLCOE) : 0;
 
+            // Calculate Savings per kWh for Customer
+            const totalEnergyConsumedByCustomer = customerAnnualConsumption * ppaTerm; 
+            // Calculate total customer cost without solar, considering grid price inflation over term
+            let totalGridCostNoSolarOverTerm = 0;
+            for (let y = 1; y <= ppaTerm; y++) {
+                totalGridCostNoSolarOverTerm += customerAnnualConsumption * (currentGridPrice * (1 + gridInflationRate)**(y - 1));
+            }
+            const overallCostPerKwhNoSolar = totalEnergyConsumedByCustomer > 0 ? totalGridCostNoSolarOverTerm / totalEnergyConsumedByCustomer : 0;
+            
+            // Calculate total customer cost with solar, considering PPA cost, remaining grid purchase, and FiT
+            let totalCustomerCostWithSolarOverTerm = 0;
+            let totalCustomerSolarPPAEnergy = 0;
+            let totalCustomerExportEnergyAccumulated = 0; // Accumulator for customer export energy for LCOE calculation
+            for (let y = 1; y <= ppaTerm; y++) {
+                const effectiveSolarGenerationThisYear = (systemSize * dailyAvgSolarGenerationPerKw * 365) * (1 - systemDegradationRate)**(y - 1);
+                const consumedByCustomerSolarPPAThisYear = effectiveSolarGenerationThisYear * customerSelfConsumptionPercentage;
+                const exportedEnergyByCustomerThisYear = effectiveSolarGenerationThisYear - consumedByCustomerSolarPPAThisYear; 
+                
+                const effectivePPAPriceThisYear = initialPPAPrice * (1 + ppaEscalationRate)**(y - 1);
+                const effectiveGridPriceThisYear = currentGridPrice * (1 + gridInflationRate)**(y - 1);
+
+                const annualSolarPPACostForCustomerThisYear = consumedByCustomerSolarPPAThisYear * effectivePPAPriceThisYear;
+                const remainingGridPurchaseForCustomerThisYear = Math.max(0, customerAnnualConsumption - consumedByCustomerSolarPPAThisYear);
+                const annualGridCostWithSolarThisYear = remainingGridPurchaseForCustomerThisYear * effectiveGridPriceThisYear;
+                const annualCustomerExportRevenueThisYear = exportedEnergyByCustomerThisYear * customerFeedInTariff;
+
+                totalCustomerCostWithSolarOverTerm += annualSolarPPACostForCustomerThisYear + annualGridCostWithSolarThisYear - annualCustomerExportRevenueThisYear;
+                totalCustomerSolarPPAEnergy += consumedByCustomerSolarPPAThisYear;
+                totalCustomerExportEnergyAccumulated += exportedEnergyByCustomerThisYear;
+            }
+
+            const overallCostPerKwhWithSolar = totalEnergyConsumedByCustomer > 0 ? totalCustomerCostWithSolarOverTerm / totalEnergyConsumedByCustomer : 0;
+            const savingsPerKwhForCustomer = overallCostPerKwhNoSolar - overallCostPerKwhWithSolar;
+            const percentageSavedPerKwhForCustomer = (overallCostPerKwhNoSolar > 0) ? (savingsPerKwhForCustomer / overallCostPerKwhNoSolar) * 100 : 0;
+
 
             return {
                 projectName: projectNameInput.value, 
                 projectDate: projectDateInput.value, 
                 initialTotalInvestment: initialTotalInvestment, 
+                year1NetReturn: year1NetReturn, // Pass Year 1 Net Return
+                year1ReturnPercentage: initialTotalInvestment > 0 ? (year1NetReturn / initialTotalInvestment) * 100 : 0, // Calculate Year 1 Return Percentage
                 totalSolarEnergyGenerated: totalSolarEnergyGenerated,
                 totalSolarEnergySoldToCustomer: totalSolarEnergySoldToCustomer,
                 totalSolarEnergyExported: totalSolarEnergyExported,
@@ -747,7 +880,17 @@
                 annualNetCashFlowData: annualNetCashFlowData,
                 chartLabels: chartLabels,
                 buyoutSchedule: buyoutSchedule,
-                annualOtherCostsBreakdown: annualOtherCostsBreakdown // Pass the annual breakdown data
+                annualOtherCostsBreakdown: annualOtherCostsBreakdown, 
+                // Customer-side results
+                totalCustomerGridCostNoSolar: totalCustomerGridCostNoSolar,
+                totalSolarPPACostForCustomer: totalSolarPPACostForCustomer,
+                totalCustomerGridCostWithSolar: totalCustomerGridCostWithSolar,
+                totalSavingsForCustomer: totalSavingsForCustomer,
+                averageAnnualSavingsForCustomer: totalSavingsForCustomer / ppaTerm,
+                savingsPerKwhForCustomer: savingsPerKwhForCustomer,
+                percentageSavedPerKwhForCustomer: percentageSavedPerKwhForCustomer,
+                totalCustomerExportRevenue: totalCustomerExportRevenue, 
+                terminalPayment: terminalPayment 
             };
         }
 
@@ -764,14 +907,15 @@
             // Display reordered relevant outputs (top financial metrics)
             projectIRRResult.textContent = `${results.projectIRR.toFixed(2)}%`;
             // Apply conditional styling and disclaimer for IRR
+            const irrDisclaimerElement = document.getElementById('irrDisclaimer'); 
             if (results.projectIRR < 15) {
                 projectIRRResult.classList.add('irr-red');
                 projectIRRResult.classList.remove('irr-green');
-                irrDisclaimer.textContent = ' (Less than required 15% IRR)'; 
+                irrDisclaimerElement.textContent = ' (Less than required 15% IRR)'; 
             } else {
                 projectIRRResult.classList.add('irr-green');
                 projectIRRResult.classList.remove('irr-red');
-                irrDisclaimer.textContent = ' (Meets or exceeds required 15% IRR)'; 
+                irrDisclaimerElement.textContent = ' (Meets or exceeds required 15% IRR)'; 
             }
 
             investorROIResult.textContent = `${results.investorROI.toFixed(2)}%`;
@@ -781,6 +925,8 @@
             
             // Display other outputs (summary of cash flows and energy)
             initialTotalInvestmentResult.textContent = `$${results.initialTotalInvestment.toFixed(2)}`;
+            year1NetReturnResult.textContent = `$${results.year1NetReturn.toFixed(2)}`; // Display Year 1 Net Return
+            year1ReturnPercentageResult.textContent = `${results.year1ReturnPercentage.toFixed(2)}%`; // Display Year 1 Return Percentage
             totalSolarEnergyGeneratedResult.textContent = `${results.totalSolarEnergyGenerated.toLocaleString(undefined, {maximumFractionDigits: 0})} kWh`;
             totalSolarEnergySoldToCustomerResult.textContent = `${results.totalSolarEnergySoldToCustomer.toLocaleString(undefined, {maximumFractionDigits: 0})} kWh`;
             totalSolarEnergyExportedResult.textContent = `${results.totalSolarEnergyExported.toLocaleString(undefined, {maximumFractionDigits: 0})} kWh`; 
@@ -789,18 +935,8 @@
             totalInvestorOMCostResult.textContent = `$${results.totalInvestorOMCost.toFixed(2)}`;
             totalOtherAnnualCostsResult.textContent = `$${results.totalOtherAnnualCosts.toFixed(2)}`; 
             netProfitForInvestorResult.textContent = `$${results.netProfitForInvestor.toFixed(2)}`;
+            terminalPaymentResult.textContent = `$${results.terminalPayment.toFixed(2)}`; 
             
-            // Populate Annual Other Costs Breakdown Table
-            annualOtherCostsTableBody.innerHTML = '';
-            results.annualOtherCostsBreakdown.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.year}</td>
-                    <td>$${item.value.toFixed(2)}</td>
-                `;
-                annualOtherCostsTableBody.appendChild(row);
-            });
-
             // Populate Buyout Schedule Table
             buyoutScheduleTableBody.innerHTML = ''; 
             results.buyoutSchedule.forEach(item => {
@@ -811,6 +947,16 @@
                 `;
                 buyoutScheduleTableBody.appendChild(row);
             });
+
+            // Populate Customer Financials
+            totalCustomerGridCostNoSolarResult.textContent = `$${results.totalCustomerGridCostNoSolar.toFixed(2)}`;
+            totalSolarPPACostForCustomerResult.textContent = `$${results.totalSolarPPACostForCustomer.toFixed(2)}`;
+            totalCustomerGridCostWithSolarResult.textContent = `$${results.totalCustomerGridCostWithSolar.toFixed(2)}`;
+            totalSavingsForCustomerResult.textContent = `$${results.totalSavingsForCustomer.toFixed(2)}`;
+            averageAnnualSavingsForCustomerResult.textContent = `$${results.averageAnnualSavingsForCustomer.toFixed(2)}`;
+            savingsPerKwhForCustomerResult.textContent = `$${results.savingsPerKwhForCustomer.toFixed(3)}/kWh`;
+            percentageSavedPerKwhForCustomerResult.textContent = `${results.percentageSavedPerKwhForCustomer.toFixed(2)}%`; 
+            totalCustomerExportRevenueResult.textContent = `$${results.totalCustomerExportRevenue.toFixed(2)}`; 
 
             // Destroy existing chart instance if it exists
             if (cashFlowChart) {
@@ -917,6 +1063,14 @@
                 Levelized Cost of Energy (LCOE): $${results.lcoe.toFixed(3)}/kWh
                 Initial Total Investment: $${results.initialTotalInvestment.toFixed(2)}
                 Net Profit for Investor: $${results.netProfitForInvestor.toFixed(2)}
+                Terminal Payment: $${results.terminalPayment.toFixed(2)}
+                Customer Total Savings: $${results.totalSavingsForCustomer.toFixed(2)}
+                Customer Average Annual Savings: $${results.averageAnnualSavingsForCustomer.toFixed(2)}
+                Customer Savings per kWh: $${results.savingsPerKwhForCustomer.toFixed(3)}/kWh
+                Customer Percentage Saved per kWh: ${results.percentageSavedPerKwhForCustomer.toFixed(2)}%
+                Customer Total Export Revenue: $${results.totalCustomerExportRevenue.toFixed(2)}
+                Investor Year 1 Net Return: $${results.year1NetReturn.toFixed(2)}
+                Investor Year 1 Return Percentage: ${results.year1ReturnPercentage.toFixed(2)}%
                 `;
 
                 let chatHistory = [];
@@ -961,21 +1115,29 @@
         });
 
         // Event listener for the Get Insights button
-        getInsightsBtn.addEventListener('click', getProjectInsights); // New event listener
+        getInsightsBtn.addEventListener('click', getProjectInsights); 
 
         // Initial setup on page load
         document.addEventListener('DOMContentLoaded', () => {
             setTodayDate(); 
             // Clear existing dynamic cost entries before adding defaults
             dynamicOtherCostsContainer.innerHTML = '';
-            // Add initial dynamic cost entries (ensure this is the ONLY place these are rendered initially)
+            // Add initial dynamic cost entries
             renderOtherAnnualCostRow({ id: 1, type: 'fixed', value: 1000, label: 'Roof Rental' });
             renderOtherAnnualCostRow({ id: 2, type: 'per_kwh_sold', value: 0.005, label: 'Partners Fee' });
             renderOtherAnnualCostRow({ id: 3, type: 'fixed', value: 200, label: 'Metering Fees' });
             
+            // Set terminal payment default to last buyout value
+            // This needs to be done AFTER the buyout schedule is calculated once.
+            const initialResults = calculatePPADetails();
+            const lastBuyout = initialResults.buyoutSchedule.length > 0 ? initialResults.buyoutSchedule[initialResults.buyoutSchedule.length - 1].value : 0;
+            const terminalPaymentInput = document.getElementById('terminalPayment'); 
+            if (terminalPaymentInput) {
+                terminalPaymentInput.value = lastBuyout.toFixed(2);
+            }
+
             // Directly call calculate and display after DOM is loaded and initial dynamic elements are rendered
-            const results = calculatePPADetails();
-            displayResults(results);
+            displayResults(initialResults);
         });
 
     </script>
