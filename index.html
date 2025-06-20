@@ -370,8 +370,8 @@
         const lcoeResult = document.getElementById('lcoeResult');
         const irrDisclaimer = document.getElementById('irrDisclaimer'); 
         const initialTotalInvestmentResult = document.getElementById('initialTotalInvestmentResult'); 
-        const year1NetReturnResult = document.getElementById('year1NetReturnResult'); // New output element
-        const year1ReturnPercentageResult = document.getElementById('year1ReturnPercentageResult'); // New output element
+        const year1NetReturnResult = document.getElementById('year1NetReturnResult'); 
+        const year1ReturnPercentageResult = document.getElementById('year1ReturnPercentageResult'); 
         const totalSolarEnergyGeneratedResult = document.getElementById('totalSolarEnergyGeneratedResult');
         const totalSolarEnergySoldToCustomerResult = document.getElementById('totalSolarEnergySoldToCustomerResult');
         const totalSolarEnergyExportedResult = document.getElementById('totalSolarEnergyExportedResult'); 
@@ -823,39 +823,31 @@
             const lcoe = totalLifetimeEnergyProducedForLCOE > 0 ? (totalLifetimeCostsForLCOE / totalLifetimeEnergyProducedForLCOE) : 0;
 
             // Calculate Savings per kWh for Customer
-            const totalEnergyConsumedByCustomer = customerAnnualConsumption * ppaTerm; 
-            // Calculate total customer cost without solar, considering grid price inflation over term
-            let totalGridCostNoSolarOverTerm = 0;
-            for (let y = 1; y <= ppaTerm; y++) {
-                totalGridCostNoSolarOverTerm += customerAnnualConsumption * (currentGridPrice * (1 + gridInflationRate)**(y - 1));
-            }
-            const overallCostPerKwhNoSolar = totalEnergyConsumedByCustomer > 0 ? totalGridCostNoSolarOverTerm / totalEnergyConsumedByCustomer : 0;
-            
-            // Calculate total customer cost with solar, considering PPA cost, remaining grid purchase, and FiT
-            let totalCustomerCostWithSolarOverTerm = 0;
-            let totalCustomerSolarPPAEnergy = 0;
-            let totalCustomerExportEnergyAccumulated = 0; // Accumulator for customer export energy for LCOE calculation
+            // The approach for customer savings per kWh needs to accurately reflect *their* energy cost
+            // This is the average grid price over the PPA term minus the average effective PPA price (including FiT)
+            let totalCustomerSolarEnergyAvailable = 0; // Total solar energy available for customer consumption
+            let totalCustomerEffectiveCostOfSolar = 0; // Total cost customer pays for consumed solar (PPA cost - FiT on their exports)
+            let totalCounterfactualGridCost = 0; // What customer would have paid from grid for their consumed solar
+
             for (let y = 1; y <= ppaTerm; y++) {
                 const effectiveSolarGenerationThisYear = (systemSize * dailyAvgSolarGenerationPerKw * 365) * (1 - systemDegradationRate)**(y - 1);
                 const consumedByCustomerSolarPPAThisYear = effectiveSolarGenerationThisYear * customerSelfConsumptionPercentage;
-                const exportedEnergyByCustomerThisYear = effectiveSolarGenerationThisYear - consumedByCustomerSolarPPAThisYear; 
+                const exportedEnergyByCustomerThisYear = effectiveSolarGenerationThisYear - consumedByCustomerSolarPPAThisYear;
                 
                 const effectivePPAPriceThisYear = initialPPAPrice * (1 + ppaEscalationRate)**(y - 1);
                 const effectiveGridPriceThisYear = currentGridPrice * (1 + gridInflationRate)**(y - 1);
+                const customerAnnualExportRevenueThisYear = exportedEnergyByCustomerThisYear * customerFeedInTariff;
 
-                const annualSolarPPACostForCustomerThisYear = consumedByCustomerSolarPPAThisYear * effectivePPAPriceThisYear;
-                const remainingGridPurchaseForCustomerThisYear = Math.max(0, customerAnnualConsumption - consumedByCustomerSolarPPAThisYear);
-                const annualGridCostWithSolarThisYear = remainingGridPurchaseForCustomerThisYear * effectiveGridPriceThisYear;
-                const annualCustomerExportRevenueThisYear = exportedEnergyByCustomerThisYear * customerFeedInTariff;
-
-                totalCustomerCostWithSolarOverTerm += annualSolarPPACostForCustomerThisYear + annualGridCostWithSolarThisYear - annualCustomerExportRevenueThisYear;
-                totalCustomerSolarPPAEnergy += consumedByCustomerSolarPPAThisYear;
-                totalCustomerExportEnergyAccumulated += exportedEnergyByCustomerThisYear;
+                totalCustomerSolarEnergyAvailable += consumedByCustomerSolarPPAThisYear;
+                totalCustomerEffectiveCostOfSolar += (consumedByCustomerSolarPPAThisYear * effectivePPAPriceThisYear) - customerAnnualExportRevenueThisYear; // Cost of solar for customer minus export revenue
+                totalCounterfactualGridCost += consumedByCustomerSolarPPAThisYear * effectiveGridPriceThisYear; // What customer would have paid from grid for same solar energy
             }
 
-            const overallCostPerKwhWithSolar = totalEnergyConsumedByCustomer > 0 ? totalCustomerCostWithSolarOverTerm / totalEnergyConsumedByCustomer : 0;
-            const savingsPerKwhForCustomer = overallCostPerKwhNoSolar - overallCostPerKwhWithSolar;
-            const percentageSavedPerKwhForCustomer = (overallCostPerKwhNoSolar > 0) ? (savingsPerKwhForCustomer / overallCostPerKwhNoSolar) * 100 : 0;
+            const effectiveAverageCostPerKwhSolarForCustomer = totalCustomerSolarEnergyAvailable > 0 ? totalCustomerEffectiveCostOfSolar / totalCustomerSolarEnergyAvailable : 0;
+            const averageGridPricePerKwhOverTerm = totalCustomerSolarEnergyAvailable > 0 ? totalCounterfactualGridCost / totalCustomerSolarEnergyAvailable : 0;
+
+            const savingsPerKwhForCustomer = averageGridPricePerKwhOverTerm - effectiveAverageCostPerKwhSolarForCustomer;
+            const percentageSavedPerKwhForCustomer = (averageGridPricePerKwhOverTerm > 0) ? (savingsPerKwhForCustomer / averageGridPricePerKwhOverTerm) * 100 : 0;
 
 
             return {
@@ -887,8 +879,8 @@
                 totalCustomerGridCostWithSolar: totalCustomerGridCostWithSolar,
                 totalSavingsForCustomer: totalSavingsForCustomer,
                 averageAnnualSavingsForCustomer: totalSavingsForCustomer / ppaTerm,
-                savingsPerKwhForCustomer: savingsPerKwhForCustomer,
-                percentageSavedPerKwhForCustomer: percentageSavedPerKwhForCustomer,
+                savingsPerKwhForCustomer: savingsPerKwhForCustomer, // Corrected calculation
+                percentageSavedPerKwhForCustomer: percentageSavedPerKwhForCustomer, // Corrected calculation
                 totalCustomerExportRevenue: totalCustomerExportRevenue, 
                 terminalPayment: terminalPayment 
             };
@@ -1143,4 +1135,5 @@
     </script>
 </body>
 </html>
+
 
